@@ -1,0 +1,237 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: rgb(62, 17, 78);
+}
+#login { min-width: 100%; min-height: 100%; color: #FFF; text-align: center;}
+off#login h1 {margin-top: 120px; margin-bottom: 50px; font-size: 5em;}
+off#login a.btn-primary {background-color: #2EBD59; color: #FFF; font-weight: bold; padding:15px 20px 15px 20px; border: none; border-radius: 5px;}
+#login, #loggedin {
+  display: none;
+   z-index: 999;
+}
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 500px;
+  z-index: 999;
+}
+
+#map {
+  min-height: 100%;
+  min-width: 100%;
+  position: absolute;
+  z-index: -1
+  display: block;
+}
+
+#results {
+  float:left;
+  overflow: scroll;
+  width: 100%;
+  max-height: 250px;
+}
+#user-profile {
+  color: #FFF;
+  position: absolute;
+  background: rgba(62, 17, 78, 0.93);
+  width: 100%;
+  z-index: 1;
+  height: 5%;
+  min-height: 80px;
+  text-align: center;
+}
+#user-profile h1 {  font-size: 1.8em;}
+
+#user-profile .round-img { border-radius: 100%; overflow: hidden; width: 62px; height: 62px; border-radius: 50%; margin-top: -30px;}
+#user-profile .round-img img {
+  position: absolute;
+  /*clip: rect(0px,100px,120px,10px);*/
+  width: 70px;
+  height: 70px;
+}
+
+.drop-btn {
+
+}
+.media-object { 
+ margin-top:100px;
+margin-left: 20px;
+ width: 120px;
+ float:left;
+ z-index: 999;
+ float:left;
+}
+
+.container { width: 100%; margin:0;}
+
+button#add {
+  position: absolute;
+  bottom: 5%;
+  right: 5%;
+  aborder-radius: 50%;
+  background-image: url(https://trello-attachments.s3.amazonaws.com/58395e0700b6171c93892a90/58399f27ad509d72b3b06fa7/700fb5ea127798b6a0567114f0ef11a2/spotifyaddpinsmaller.png);
+  background-repeat: no-repeat;
+  background-size: 60px 60px;
+  background-position: 50% 0%;
+  /* put the height and width of your image here */
+  height: 60px;
+  width: 60px;
+  border: none;
+  position: absolute;
+  z-index: 999;
+  background-color: transparent;
+}
+
+button span {
+  display: none;
+}
+
+
+/* Popup container */
+
+#myPopup{
+  background: rgba(0,0,0, 0.7);
+  border-radius: 15px;
+  padding:15px;
+  width: 12%;
+  max-height: 85%;
+  height: auto;
+  z-index: 999;
+  position: absolute;
+  top:15%;
+  left: 15%;
+  right:5%;
+  width: 80%;
+  max-width: 500px;
+  visibility: hidden;
+}
+#myPopup label { color: #E87CA1; font-weight: bold; font-size: 1.3em;}
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+#myPopup input, #myPopup button {min-height: 50px; font-size: 1.3em;}
+#myPopup #results {
+  margin-top: 10px;
+
+}
+#myPopup .resultsitemstyle {
+  border-bottom: 1px solid white;
+  padding: 5px 3px 5px 3px;
+  cursor: pointer;
+}
+#myPopup .resultsitemstyle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+#myPopup input, #myPopup textarea {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #FFF;
+}
+/* The actual popup (appears on top) */
+.popup .popuptext {
+    visibility: hidden;
+    width: 160px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -80px;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class when clicking on the popup container (hide and show the popup) */
+#myPopup.show {
+    visibility: visible !important;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
+
+/* STYLES */
+
+
+@media (max-width: 400px) {
+    body {
+        background-image: url("../images/backgroundspotify.png");
+        background-size: 100%;
+        background-repeat: no-repeat;
+    }
+}
+
+@media (min-width: 401px) {
+    body {
+        background-image: url("../images/webbackground1.png");
+        background-size: 100%;
+        background-repeat: no-repeat;
+        min-width: 100%;
+        min-height: 100%;
+    }
+}
+
+#login .containerInner{
+    margin-top:15%;
+    width:100%;
+    text-align: center;
+    display:inline-block;
+    vertical-align:middle;
+
+}
+
+
+
+#login .containerInner img {
+    display: inline-block;
+    float: leftM
+    position: relative;
+    top: 40%;
+    margin-bottom: 10px;
+
+}
+
+#login .btn-info {
+    display: inline-block;
+    position: relative;
+    top:40%;
+    background: #1ABC9C;
+    border-color: #1ABC9C;
+    font-family: "Helvetica Neue";
+    font-size: 12pt;
+    padding: 10px 15px 10px 15px;
+}
+
+#login .btn-info:hover {
+    background: #1ABC9C;
+    border-color: #1ABC9C;
+}

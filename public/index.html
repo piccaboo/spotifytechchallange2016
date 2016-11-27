@@ -1,0 +1,397 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Dropify</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+    <script type="text/javascript" src="/js/infobubble.js"></script>
+
+</head>
+
+<body id="body">
+    <div class="wrapper">
+        <div id="login" class="">
+          <div class="containerInner">
+             <div class="row">
+                 <div class="col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-4 col-md-8 col-md-offset-4 col-lg-6 col-lg-offset-6" style="margin:auto;">
+                     <img src="images/dropifylogo.png" class="img-responsive">
+                 </div>
+
+             </div>
+
+              <div class="row">
+                  <div class=" col-xs-12 col-xs-offset-0 col-sm-8 col-sm-offset-4 col-md-8 col-md-offset-4 col-lg-6 col-lg-offset-6" style="margin:auto;">
+                      <a href="/login" class="btn btn-info">Log in with Spotify</a>
+                  </div>
+              </div>
+          </div>
+
+
+        </div>
+        <div id="loggedin">
+            <div id="map"></div>
+            <div id="user-profile"></div>
+            <div id="myPopup" class="popuptext">
+                <div class="form-group">
+
+                    <label for="comment">Input your song for this location:</label>
+                    <div class="col-xs-10">
+                        <form id="search-form">
+                            <input type="text" class="form-control" placeholder="Search." id="query" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary col-xs-2" id="search"><i class="fa fa-search" aria-hidden="true"></i></button>
+                    </form>
+                    <div id="results" class="col-xs-12 resultsstyle"></div>
+                </div>
+                <script id="results-template" type="text/x-handlebars-template">
+                    {{#each tracks.items}}
+                    <div class="resultsitemstyle" onclick="setTrack()">
+                        <div style="color: white">
+                            {{name}} <br/></div>
+                        <div class="result-item" style="background-image:url({{album.images.2.url}})" data-album-id="{{id}}" class="cover" albumURL="{{album.images.2.url}}" trackName="{{name}}" trackURL="{{external_urls.spotify}}" artistName="{{artists.0.name}}"></div>
+                        <div style="color: white"> Artist: {{artists.0.name}} </div>
+                        <!-- <div style="border:1px solid green; "> Album Type = {{album.album_type}} </div> -->
+                        <!-- <div style="border:1px solid green; "> Album name = {{album.name}} </div> -->
+                    </div>
+
+                    {{/each}}
+                </script>
+
+                <label for="comment">I've droped this song because:</label>
+
+                <div class="col-xs-10"><textarea id="reason" class="form-control" rows="2" cols="2"></textarea></div><br />
+                <button class="btn btn-info col-xs-2" id="drop" onclick="setText()">+</button>
+
+
+                <script type="text/javascript">
+                var dataSetTrack = localStorage;
+                var dataSetText = localStorage;
+           function setTrack() {
+
+             var albumURL = $('.result-item').attr('albumURL');
+             var artistName = $('.result-item').attr('artistName');
+             var trackName = $('.result-item').attr('trackName');
+             var trackURL = $('.result-item').attr('trackURL');
+
+             //var reasonText = 'document.getElementById("reason").value';
+
+
+            dataSetTrack.setItem('albumURL', albumURL);
+            dataSetTrack.setItem('artistName', artistName);
+            dataSetTrack.setItem('trackName', trackName);
+            dataSetTrack.setItem('trackURL', trackURL);
+
+           }
+
+           function setText(){
+
+             var reasonText = document.getElementById("reason").value;
+             dataSetText.setItem('reasonText', reasonText);
+             console.log(reasonText);
+           }
+
+                    // find template and compile it
+                    var templateSource = document.getElementById('results-template').innerHTML,
+                        template = Handlebars.compile(templateSource),
+                        resultsPlaceholder = document.getElementById('results'),
+                        playingCssClass = 'playing',
+                        audioObject = null;
+
+                    var fetchTracks = function(albumId, callback) {
+                        $.ajax({
+                            url: 'https://api.spotify.com/v1/album/' + albumId,
+                            success: function(response) {
+                                callback(response);
+                            }
+                        });
+                    };
+
+                    var searchAlbums = function(query) {
+                        $.ajax({
+                            url: 'https://api.spotify.com/v1/search',
+                            data: {
+                                q: query,
+                                type: 'track'
+                            },
+                            success: function(response) {
+                                resultsPlaceholder.innerHTML = template(response);
+                            }
+                        });
+                    };
+
+                    results.addEventListener('click', function(e) {
+                        var target = e.target;
+                        if (target !== null && target.classList.contains('cover')) {
+                            if (target.classList.contains(playingCssClass)) {
+                                audioObject.pause();
+                            } else {
+                                if (audioObject) {
+                                    audioObject.pause();
+                                }
+                                fetchTracks(target.getAttribute('data-album-id'), function(data) {
+                                    audioObject = new Audio(data.tracks.items[0].preview_url);
+                                    audioObject.play();
+                                    target.classList.add(playingCssClass);
+                                    audioObject.addEventListener('ended', function() {
+                                        target.classList.remove(playingCssClass);
+                                    });
+                                    audioObject.addEventListener('pause', function() {
+                                        target.classList.remove(playingCssClass);
+                                    });
+                                });
+                            }
+                        }
+                    });
+
+                    document.getElementById('search-form').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        searchAlbums(document.getElementById('query').value);
+                    }, false);
+                </script>
+
+
+
+            </div>
+
+
+
+        <div id="oauth">
+        </div>
+        <button class="btn btn-default" id="log-out">Log out</button>
+        <button onclick="myFunction()" class="btn btn-info drop-btn" id="add"></button>
+        <!-- <button class="btn btn-info drop-btn"></button> -->
+
+        <script>
+            function initMap() {
+                var map = new google.maps.Map(document.getElementById('map'), {
+                    center: {lat: 59.342035, lng: 18.062993,},
+                    zoom: 14,
+                    disableDefaultUI: true,
+                        styles: [{"featureType":"all","elementType":"all","stylers":[{"visibility":"simplified"},{"hue":"#bc00ff"},{"saturation":"0"}]},{"featureType":"administrative","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"administrative","elementType":"labels.text.fill","stylers":[{"color":"#e8b8f9"}]},{"featureType":"administrative.country","elementType":"labels","stylers":[{"color":"#ff0000"}]},{"featureType":"administrative.land_parcel","elementType":"labels.text.fill","stylers":[{"visibility":"simplified"}]},{"featureType":"landscape","elementType":"all","stylers":[{"color":"#3e114e"},{"visibility":"simplified"}]},{"featureType":"landscape","elementType":"labels","stylers":[{"visibility":"off"},{"color":"#a02aca"}]},{"featureType":"landscape.natural","elementType":"all","stylers":[{"visibility":"simplified"},{"color":"#2e093b"}]},{"featureType":"landscape.natural","elementType":"labels.text","stylers":[{"color":"#9e1010"},{"visibility":"off"}]},{"featureType":"landscape.natural","elementType":"labels.text.fill","stylers":[{"color":"#ff0000"}]},{"featureType":"landscape.natural.landcover","elementType":"all","stylers":[{"visibility":"simplified"},{"color":"#58176e"}]},{"featureType":"landscape.natural.landcover","elementType":"labels.text.fill","stylers":[{"visibility":"simplified"}]},{"featureType":"poi","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"poi.business","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"road","elementType":"all","stylers":[{"saturation":-100},{"lightness":45}]},{"featureType":"road","elementType":"geometry","stylers":[{"visibility":"simplified"},{"color":"#a02aca"}]},{"featureType":"road","elementType":"labels","stylers":[{"visibility":"simplified"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#d180ee"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"all","stylers":[{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"geometry","stylers":[{"visibility":"simplified"},{"color":"#a02aca"}]},{"featureType":"road.highway","elementType":"labels","stylers":[{"visibility":"off"},{"color":"#ff0000"}]},{"featureType":"road.highway","elementType":"labels.text","stylers":[{"color":"#a02aca"},{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels.text.fill","stylers":[{"color":"#cc81e7"},{"visibility":"simplified"}]},{"featureType":"road.highway","elementType":"labels.text.stroke","stylers":[{"visibility":"simplified"},{"hue":"#bc00ff"}]},{"featureType":"road.arterial","elementType":"geometry","stylers":[{"color":"#6d2388"}]},{"featureType":"road.arterial","elementType":"labels.text.fill","stylers":[{"color":"#c46ce3"}]},{"featureType":"road.arterial","elementType":"labels.icon","stylers":[{"visibility":"off"}]},{"featureType":"transit","elementType":"all","stylers":[{"visibility":"off"}]},{"featureType":"water","elementType":"all","stylers":[{"color":"#b7918f"},{"visibility":"on"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#280b33"}]},{"featureType":"water","elementType":"labels","stylers":[{"visibility":"simplified"},{"color":"#a02aca"}]}]
+                });
+                // Try HTML5 geolocation.
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        map.setCenter(pos)
+                    }, function() {
+                        alert("Can't get location");
+                        var pos = {
+                            lat: 59.342022,
+                            lng: 18.064180
+                        };
+                        map.setCenter(pos)
+                    });
+                } else {
+                    // Browser doesn't support Geolocation
+                    alert("broswer doesn't support")
+                }
+                var locations = [
+                    ['KTH', 59.349242, 18.072378, 1],
+                    ['Hawaii Poke', 59.334379, 18.073007, 2],
+                    ['Greasy Spoon', 59.344341, 18.052895, 3]
+                ];
+                var fakedrops = [
+['https://trello-attachments.s3.amazonaws.com/58395e0700b6171c93892a90/5839de580b81670eed8fbacb/174544d800ac91aeb20b679ce51bc27e/pin1.png'],
+['https://trello-attachments.s3.amazonaws.com/58395e0700b6171c93892a90/5839de580b81670eed8fbacb/7ab533b0a6ad17aecbc94bc119c5fcb8/pin2.png'],
+['https://trello-attachments.s3.amazonaws.com/58395e0700b6171c93892a90/5839de580b81670eed8fbacb/288b82a15c58aecca68f282bf5a91b57/pin3.png']
+];
+
+                for (i = 0; i < locations.length; i++) {
+                    marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+                        icon: fakedrops[i][0],
+                        map: map
+                    });
+                }
+                document.getElementById('drop').addEventListener('click', dropPin, false);
+
+                function dropPin(){
+                  var popup = document.getElementById('myPopup');
+                  popup.classList.toggle('show');
+                   navigator.geolocation.getCurrentPosition(function(position) {
+                        var pos = {
+                          lat: position.coords.latitude,
+                          lng: position.coords.longitude
+                        };
+                        var marker = new google.maps.Marker({
+position: pos,
+icon: 'https://trello-attachments.s3.amazonaws.com/58395e0700b6171c93892a90/5839de580b81670eed8fbacb/1afe0cae438fa3b9dea74ffce7d07053/placeholder-12.png',
+map: map
+});
+                        marker.setPosition(pos);
+                        map.setCenter(pos);
+
+                      // var infowindow = new google.maps.InfoWindow({
+                      //  content: "<iframe src='dropify/public/search.html'></iframe>",
+                      // });
+                      // infowindow.open(map, marker);
+
+                       infoBubble = new InfoBubble({
+                             map: map,
+                             //content: '<div id="myDrop" style="color: white"></div>',
+                             content: '<a href='+ dataSetTrack.getItem('trackURL') +' target="_blank"><div id="myDrop" style="color: white"><img src="'+ dataSetTrack.getItem('albumURL') +'" style="left: 100px" width="180"><div style="color: white"><p style="margin: 0;font-size: 15px">'+ dataSetTrack.getItem('artistName') + '</p><h3 style="margin: 0">' + dataSetTrack.getItem('trackName') +'</h3></div><p style="color: white">'+ 'This song is because: ' + dataSetText.getItem('reasonText') +' </p></div></a>',
+                             position: new google.maps.LatLng(-32.0, 149.0),
+                             shadowStyle: 1,
+                             padding: 0,
+                             backgroundColor: '#2E152A',
+                             borderRadius: 5,
+                             arrowSize: 10,
+                             borderWidth: 1,
+                             borderColor: '#2c2c2c',
+                             disableAutoPan: true,
+                             hideCloseButton: false,
+                             arrowPosition: 30,
+                             backgroundClassName: 'transparent',
+                             arrowStyle: 2,
+                             minWidth: 200,
+                             minHeight: 200
+                       });
+
+                       infoBubble.open(map, marker);
+                   });
+
+                }
+
+
+              // document.getElementById('drop').addEventListener('click', getInfo, false);
+
+               function getInfo() {
+                 $('#myDrop').append('<img src="https://i.scdn.co/image/b251660ff4f59508e50301ce04749679ccdea5ac" style="left: 100px">');
+                 $('#myDrop').append('<div style="color: white"><h1>Cold Play: Fix You</h1></div>');
+                 $('#myDrop').append('<p style="color: white">Such a moment, much wow. Very music!</p>')
+               }
+
+
+            }
+        </script>
+    </div>
+    </div>
+    </div>
+
+    <script id="user-profile-template" type="text/x-handlebars-template">
+
+        <h1>Welcome {{display_name}} to Dropify</h1>
+        <div class="media">
+            <div class="pull-left round-img">
+                <img class="media-object img-circle" width="100" src="{{images.0.url}}" />
+            </div>
+            <div class="media-body">
+
+            </div>
+        </div>
+    </script>
+
+    <script id="oauth-template" type="text/x-handlebars-template">
+        <!--<h2>oAuth info</h2>
+      <dl class="dl-horizontal">
+        <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
+        <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}></dd>
+      </dl> -->
+    </script>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBj2d1W6SG3kx5dvDxArjizvLPadCc-_gY&callback=initMap">
+    </script>
+
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script>
+        (function() {
+            /**
+             * Obtains parameters from the hash of the URL
+             * @return Object
+             */
+            function getHashParams() {
+                var hashParams = {};
+                var e, r = /([^&;=]+)=?([^&;]*)/g,
+                    q = window.location.hash.substring(1);
+                while (e = r.exec(q)) {
+                    hashParams[e[1]] = decodeURIComponent(e[2]);
+                }
+                return hashParams;
+            }
+
+            var userProfileSource = document.getElementById('user-profile-template').innerHTML,
+                userProfileTemplate = Handlebars.compile(userProfileSource),
+                userProfilePlaceholder = document.getElementById('user-profile');
+
+            var oauthSource = document.getElementById('oauth-template').innerHTML,
+                oauthTemplate = Handlebars.compile(oauthSource),
+                oauthPlaceholder = document.getElementById('oauth');
+
+            var params = getHashParams();
+
+            var access_token = params.access_token,
+                refresh_token = params.refresh_token,
+                error = params.error;
+
+            if (error) {
+                alert('There was an error during the authentication');
+            } else {
+                if (access_token) {
+                    // render oauth info
+                    oauthPlaceholder.innerHTML = oauthTemplate({
+                        access_token: access_token,
+                        refresh_token: refresh_token
+                    });
+
+                    $.ajax({
+                        url: 'https://api.spotify.com/v1/me',
+                        headers: {
+                            'Authorization': 'Bearer ' + access_token
+                        },
+                        success: function(response) {
+                            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+
+                            $('#login').hide();
+                            $('#loggedin').show();
+                        }
+                    });
+                } else {
+                    // render initial screen
+                    $('#login').show();
+                    $('#loggedin').hide();
+                }
+
+
+
+                document.getElementById('log-out').addEventListener('click', function() {
+                    $.ajax({
+                        url: '/logout',
+                        data: {}
+                    }).done(function(data) {
+                        access_token = '';
+                        $('#login').show();
+                        $('#loggedin').hide();
+                    });
+                }, false);
+            }
+        })();
+    </script>
+
+    <!-- <link rel="javascript" type="text/javascript" href="/js/main.js"> -->
+
+
+
+
+    <script>
+        // When the user clicks on <div>, open the popup
+        function myFunction() {
+            console.log('TEST');
+            var popup = document.getElementById('myPopup');
+            popup.classList.toggle('show');
+        }
+    </script>
+
+
+</body>
+
+</html>
